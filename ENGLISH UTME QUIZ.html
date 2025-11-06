@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIRKACADEMY - UTME English Quiz</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #ecf0f1;
+            --dark: #34495e;
+            --accent: #9b59b6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .academy-name {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .academy-tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        h1 {
+            font-size: 1.8rem;
+            margin-top: 10px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .timer-container {
+            background-color: var(--dark);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .timer {
+            font-size: 1.5rem;
+            color: var(--light);
+        }
+        
+        .timer.warning {
+            color: var(--warning);
+        }
+        
+        .timer.danger {
+            color: var(--danger);
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background-color: #d35400;
+        }
+        
+        .btn-accent {
+            background-color: var(--accent);
+        }
+        
+        .btn-accent:hover {
+            background-color: #8e44ad;
+        }
+        
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .question-container {
+            display: none;
+        }
+        
+        .question-container.active {
+            display: block;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .flag-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #ccc;
+        }
+        
+        .flag-btn.flagged {
+            color: var(--warning);
+        }
+        
+        .question-text {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .options-container {
+            margin-bottom: 20px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .option:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .option.selected {
+            background-color: #e1f5fe;
+            border-color: var(--primary);
+        }
+        
+        .option-label {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 30px;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            transition: width 0.3s;
+        }
+        
+        .question-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .question-grid-item {
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .question-grid-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .question-grid-item.answered {
+            background-color: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+        
+        .question-grid-item.current {
+            border-color: var(--primary);
+            border-width: 2px;
+        }
+        
+        .question-grid-item.flagged {
+            background-color: var(--warning);
+            color: white;
+            border-color: var(--warning);
+        }
+        
+        .results-container {
+            display: none;
+        }
+        
+        .score-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: var(--light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            border: 5px solid var(--primary);
+        }
+        
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .score-percentage {
+            font-size: 1.2rem;
+            color: var(--dark);
+        }
+        
+        .results-details {
+            margin-top: 30px;
+        }
+        
+        .result-item {
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .result-item.correct {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--success);
+        }
+        
+        .result-item.incorrect {
+            background-color: #ffebee;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .correct-answer {
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        .admin-panel {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .results-table th {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .results-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .results-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .email-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .email-status.success {
+            background-color: #e8f5e9;
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        
+        .email-status.error {
+            background-color: #ffebee;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        .attempt-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .pdf-preview {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: white;
+        }
+        
+        .results-compilation {
+            margin-top: 30px;
+        }
+        
+        .compilation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent);
+        }
+        
+        .compilation-title {
+            font-size: 1.5rem;
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .download-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .leaderboard {
+            margin-top: 20px;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .leaderboard-item:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .leaderboard-rank {
+            font-weight: bold;
+            color: var(--accent);
+            width: 40px;
+        }
+        
+        .leaderboard-name {
+            flex: 1;
+        }
+        
+        .leaderboard-score {
+            font-weight: bold;
+            color: var(--primary);
+            width: 80px;
+            text-align: right;
+        }
+        
+        .leaderboard-percentage {
+            width: 80px;
+            text-align: right;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .question-grid {
+                grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            }
+            
+            .score-circle {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .score-value {
+                font-size: 2rem;
+            }
+            
+            .download-buttons {
+                flex-direction: column;
+            }
+            
+            .academy-name {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="academy-name">SIRKACADEMY</div>
+            <div class="academy-tagline">Excellence in UTME Preparation</div>
+            <h1>UTME English Practice Quiz</h1>
+            <p>Test your knowledge with 30 UTME English questions</p>
+        </header>
+        
+        <!-- Student Info Form -->
+        <div class="card" id="student-info-form">
+            <h2>Student Information</h2>
+            <div id="attempt-warning" class="attempt-warning hidden">
+                <p><strong>Note:</strong> You can only take this quiz once. If you've already taken it, you'll see your previous results.</p>
+            </div>
+            <div class="form-group">
+                <label for="student-name">Full Name</label>
+                <input type="text" id="student-name" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-group">
+                <label for="student-email">Email Address</label>
+                <input type="email" id="student-email" placeholder="Enter your email address" required>
+            </div>
+            <button class="btn" id="start-quiz-btn">Start Quiz</button>
+            <div id="previous-result" class="hidden">
+                <h3>Your Previous Result</h3>
+                <div id="previous-result-details"></div>
+                <button class="btn btn-warning" id="view-previous-btn">View Detailed Results</button>
+            </div>
+        </div>
+        
+        <!-- Quiz Timer -->
+        <div class="timer-container hidden" id="timer-container">
+            <div>Time Remaining:</div>
+            <div class="timer" id="timer">15:00</div>
+        </div>
+        
+        <!-- Quiz Interface -->
+        <div class="card hidden" id="quiz-interface">
+            <div class="question-container active" id="question-1">
+                <div class="question-header">
+                    <div class="question-number">Question 1</div>
+                    <button class="flag-btn" data-question="1">⚐</button>
+                </div>
+                <div class="question-text" id="question-text-1"></div>
+                <div class="options-container" id="options-1"></div>
+                <div class="navigation-buttons">
+                    <button class="btn" id="prev-btn" disabled>Previous</button>
+                    <button class="btn" id="next-btn">Next</button>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-info">
+                    <div>Progress: <span id="answered-count">0</span>/30 answered</div>
+                    <div>Flagged: <span id="flagged-count">0</span></div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <div class="question-grid" id="question-grid"></div>
+            
+            <div class="quiz-controls">
+                <button class="btn btn-warning" id="review-btn">Review Flagged Questions</button>
+                <button class="btn btn-danger" id="submit-btn">Submit Quiz</button>
+            </div>
+        </div>
+        
+        <!-- Results Display -->
+        <div class="card hidden" id="results-container">
+            <div class="score-display">
+                <div class="score-circle">
+                    <div class="score-value" id="score-value">0</div>
+                    <div class="score-percentage" id="score-percentage">0%</div>
+                </div>
+                <h2>Quiz Completed!</h2>
+                <p id="score-message"></p>
+            </div>
+            
+            <div class="email-status hidden" id="email-status"></div>
+            
+            <div class="results-details" id="results-details"></div>
+            
+            <div class="quiz-controls">
+                <button class="btn" id="retake-btn">Retake Quiz</button>
+                <button class="btn btn-accent" id="view-all-results-btn">View All Results</button>
+            </div>
+        </div>
+        
+        <!-- All Results Compilation -->
+        <div class="card hidden" id="all-results-container">
+            <div class="compilation-header">
+                <div class="compilation-title">SIRKACADEMY - All Quiz Results</div>
+                <div class="download-buttons">
+                    <button class="btn btn-success" id="download-pdf-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        </svg>
+                        Download PDF
+                    </button>
+                    <button class="btn btn-primary" id="download-csv-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        </svg>
+                        Download CSV
+                    </button>
+                </div>
+            </div>
+            
+            <div class="leaderboard" id="leaderboard">
+                <div class="leaderboard-item" style="font-weight: bold; background-color: #f0f0f0;">
+                    <div class="leaderboard-rank">Rank</div>
+                    <div class="leaderboard-name">Student Name</div>
+                    <div class="leaderboard-score">Score</div>
+                    <div class="leaderboard-percentage">Percentage</div>
+                </div>
+                <div id="leaderboard-body">
+                    <!-- Leaderboard items will be populated here -->
+                </div>
+            </div>
+            
+            <div class="results-table-container">
+                <table class="results-table" id="results-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Score</th>
+                            <th>Percentage</th>
+                            <th>Time Taken</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
+                <div class="no-results hidden" id="no-results">No quiz results found.</div>
+            </div>
+            
+            <div class="quiz-controls">
+                <button class="btn" id="back-to-results-btn">Back to My Results</button>
+                <button class="btn btn-warning" id="retake-from-all-btn">Retake Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions data
+        const quizQuestions = [
+            // Lexis and Structure (10 questions)
+            {
+                id: 1,
+                section: "Lexis and Structure",
+                question: "Choose the word that best completes the sentence: The students were asked to _____ their assignments by Friday.",
+                options: ["submit", "submits", "submitted", "submitting"],
+                correctAnswer: 0
+            },
+            {
+                id: 2,
+                section: "Lexis and Structure",
+                question: "Identify the word that has the same vowel sound as the one represented by the underlined letter(s) in 'cat'.",
+                options: ["car", "cut", "caught", "cart"],
+                correctAnswer: 1
+            },
+            {
+                id: 3,
+                section: "Lexis and Structure",
+                question: "Choose the option that best explains the meaning of the underlined word: His argument was specious.",
+                options: ["logical and convincing", "deceptively plausible", "difficult to understand", "based on facts"],
+                correctAnswer: 1
+            },
+            {
+                id: 4,
+                section: "Lexis and Structure",
+                question: "Select the option that best completes the sentence: Neither the teacher nor the students _____ present at the meeting.",
+                options: ["was", "were", "has been", "have been"],
+                correctAnswer: 1
+            },
+            {
+                id: 5,
+                section: "Lexis and Structure",
+                question: "Choose the word that is opposite in meaning to 'benevolent'.",
+                options: ["kind", "malevolent", "generous", "friendly"],
+                correctAnswer: 1
+            },
+            {
+                id: 6,
+                section: "Lexis and Structure",
+                question: "Identify the sentence that is grammatically correct.",
+                options: [
+                    "Each of the boys have their own books.",
+                    "Each of the boys has their own books.",
+                    "Each of the boys has his own books.",
+                    "Each of the boys have his own books."
+                ],
+                correctAnswer: 2
+            },
+            {
+                id: 7,
+                section: "Lexis and Structure",
+                question: "Choose the option that best expresses the same meaning as the given sentence: 'Hardly had he arrived when it started raining.'",
+                options: [
+                    "He arrived after it started raining.",
+                    "It started raining before he arrived.",
+                    "As soon as he arrived, it started raining.",
+                    "It was raining when he arrived."
+                ],
+                correctAnswer: 2
+            },
+            {
+                id: 8,
+                section: "Lexis and Structure",
+                question: "Select the word that is stressed on the first syllable.",
+                options: ["about", "above", "accept", "advice"],
+                correctAnswer: 2
+            },
+            {
+                id: 9,
+                section: "Lexis and Structure",
+                question: "Choose the option that best completes the sentence: If I _____ you, I would accept the offer.",
+                options: ["am", "was", "were", "have been"],
+                correctAnswer: 2
+            },
+            {
+                id: 10,
+                section: "Lexis and Structure",
+                question: "Identify the option that contains a noun clause.",
+                options: [
+                    "What he said surprised everyone.",
+                    "He said something surprising.",
+                    "His statement was surprising.",
+                    "Everyone was surprised by his statement."
+                ],
+                correctAnswer: 0
+            },
+            
+            // Comprehension (5 questions)
+            {
+                id: 11,
+                section: "Comprehension",
+                passage: "The internet has revolutionized the way we communicate, work, and access information. It has connected people across the globe, breaking down geographical barriers and fostering global collaboration. However, this connectivity comes with challenges, including the spread of misinformation and privacy concerns. As we navigate this digital age, it's crucial to develop media literacy skills to discern credible information from falsehoods.",
+                question: "According to the passage, what is a challenge associated with internet connectivity?",
+                options: [
+                    "Breaking down geographical barriers",
+                    "Fostering global collaboration",
+                    "The spread of misinformation",
+                    "Revolutionizing communication"
+                ],
+                correctAnswer: 2
+            },
+            {
+                id: 12,
+                section: "Comprehension",
+                passage: "The internet has revolutionized the way we communicate, work, and access information. It has connected people across the globe, breaking down geographical barriers and fostering global collaboration. However, this connectivity comes with challenges, including the spread of misinformation and privacy concerns. As we navigate this digital age, it's crucial to develop media literacy skills to discern credible information from falsehoods.",
+                question: "What does the author suggest is crucial in the digital age?",
+                options: [
+                    "Avoiding the internet entirely",
+                    "Developing media literacy skills",
+                    "Focusing only on geographical barriers",
+                    "Ignoring privacy concerns"
+                ],
+                correctAnswer: 1
+            },
+            {
+                id: 13,
+                section: "Comprehension",
+                passage: "Climate change is one of the most pressing issues of our time. It refers to long-term shifts in temperatures and weather patterns. While these shifts can be natural, human activities have been the main driver of climate change since the 1800s, primarily due to the burning of fossil fuels like coal, oil, and gas, which produces heat-trapping gases.",
+                question: "According to the passage, what has been the main driver of climate change since the 1800s?",
+                options: [
+                    "Natural shifts in weather patterns",
+                    "Human activities",
+                    "Changes in solar radiation",
+                    "Volcanic eruptions"
+                ],
+                correctAnswer: 1
+            },
+            {
+                id: 14,
+                section: "Comprehension",
+                passage: "Climate change is one of the most pressing issues of our time. It refers to long-term shifts in temperatures and weather patterns. While these shifts can be natural, human activities have been the main driver of climate change since the 1800s, primarily due to the burning of fossil fuels like coal, oil, and gas, which produces heat-trapping gases.",
+                question: "What is mentioned as a primary cause of heat-trapping gases?",
+                options: [
+                    "Deforestation",
+                    "Agricultural practices",
+                    "Burning of fossil fuels",
+                    "Industrial waste"
+                ],
+                correctAnswer: 2
+            },
+            {
+                id: 15,
+                section: "Comprehension",
+                passage: "Education is not merely about acquiring knowledge but about learning how to think critically. It empowers individuals to question assumptions, analyze information, and form independent judgments. In a world saturated with information, the ability to discern truth from falsehood is perhaps the most valuable skill education can provide.",
+                question: "What does the passage suggest is the most valuable skill education can provide?",
+                options: [
+                    "Acquiring vast knowledge",
+                    "Learning how to think critically",
+                    "Memorizing facts and figures",
+                    "Following instructions precisely"
+                ],
+                correctAnswer: 1
+            },
+            
+            // Oral Forms (5 questions)
+            {
+                id: 16,
+                section: "Oral Forms",
+                question: "Identify the word that has a different stress pattern from the others.",
+                options: ["document", "protest", "record", "present"],
+                correctAnswer: 0
+            },
+            {
+                id: 17,
+                section: "Oral Forms",
+                question: "Which word contains the sound /θ/ as in 'think'?",
+                options: ["this", "that", "thick", "then"],
+                correctAnswer: 2
+            },
+            {
+                id: 18,
+                section: "Oral Forms",
+                question: "Choose the word that has the same consonant sound as the one represented by the underlined letter in 'measure'.",
+                options: ["vision", "pleasure", "decision", "television"],
+                correctAnswer: 1
+            },
+            {
+                id: 19,
+                section: "Oral Forms",
+                question: "Identify the word that rhymes with 'though'.",
+                options: ["through", "tough", "cough", "dough"],
+                correctAnswer: 3
+            },
+            {
+                id: 20,
+                section: "Oral Forms",
+                question: "Which option represents the correct pronunciation of 'debris'?",
+                options: ["/dɛbri/", "/deɪbris/", "/dɛbris/", "/dəbri/"],
+                correctAnswer: 0
+            },
+            
+            // Register (5 questions)
+            {
+                id: 21,
+                section: "Register",
+                question: "In a formal letter, which salutation is most appropriate?",
+                options: ["Hey there!", "Dear Sir/Madam,", "Hi!", "To whom it may concern:"],
+                correctAnswer: 1
+            },
+            {
+                id: 22,
+                section: "Register",
+                question: "Which phrase would be most appropriate in an academic essay?",
+                options: [
+                    "I think that...",
+                    "It is evident that...",
+                    "I feel like...",
+                    "In my opinion..."
+                ],
+                correctAnswer: 1
+            },
+            {
+                id: 23,
+                section: "Register",
+                question: "Identify the informal expression from the options below.",
+                options: ["Subsequently", "Furthermore", "Anyway", "Consequently"],
+                correctAnswer: 2
+            },
+            {
+                id: 24,
+                section: "Register",
+                question: "Which option would be most suitable for a job application cover letter?",
+                options: [
+                    "I'm really excited about this job!",
+                    "I am writing to express my interest in the position...",
+                    "Hey, I want this job!",
+                    "This job seems cool, so I'm applying."
+                ],
+                correctAnswer: 1
+            },
+            {
+                id: 25,
+                section: "Register",
+                question: "Choose the most formal way to end a business letter.",
+                options: [
+                    "Cheers,",
+                    "Yours faithfully,",
+                    "Take care,",
+                    "Bye,"
+                ],
+                correctAnswer: 1
+            },
+            
+            // Summary Writing Concepts (3 questions)
+            {
+                id: 26,
+                section: "Summary Writing",
+                question: "When writing a summary, what should be your primary focus?",
+                options: [
+                    "Including all details from the original text",
+                    "Expressing your personal opinions",
+                    "Capturing the main ideas in your own words",
+                    "Adding new information to improve the text"
+                ],
+                correctAnswer: 2
+            },
+            {
+                id: 27,
+                section: "Summary Writing",
+                question: "Which of these is NOT a characteristic of a good summary?",
+                options: [
+                    "It is shorter than the original text",
+                    "It maintains the original meaning",
+                    "It includes direct quotations extensively",
+                    "It is written in your own words"
+                ],
+                correctAnswer: 2
+            },
+            {
+                id: 28,
+                section: "Summary Writing",
+                question: "What should you avoid when writing a summary?",
+                options: [
+                    "Identifying the main ideas",
+                    "Using your own words",
+                    "Including minor details and examples",
+                    "Maintaining the original order of ideas"
+                ],
+                correctAnswer: 2
+            },
+            
+            // Sentence Interpretation (2 questions)
+            {
+                id: 29,
+                section: "Sentence Interpretation",
+                question: "What does the following sentence imply? 'Had I known about the traffic, I would have left earlier.'",
+                options: [
+                    "I knew about the traffic and left early",
+                    "I didn't know about the traffic and didn't leave early",
+                    "I always leave early to avoid traffic",
+                    "The traffic wasn't as bad as I expected"
+                ],
+                correctAnswer: 1
+            },
+            {
+                id: 30,
+                section: "Sentence Interpretation",
+                question: "Interpret the meaning of: 'Not until she arrived did we realize the importance of the meeting.'",
+                options: [
+                    "We realized the importance before she arrived",
+                    "We didn't realize the importance until she arrived",
+                    "She didn't realize the importance of the meeting",
+                    "The meeting wasn't important until she arrived"
+                ],
+                correctAnswer: 1
+            }
+        ];
+
+        // Quiz state
+        let currentQuestion = 1;
+        let userAnswers = new Array(quizQuestions.length).fill(null);
+        let flaggedQuestions = new Array(quizQuestions.length).fill(false);
+        let timer;
+        let timeLeft = 15 * 60; // 15 minutes in seconds
+        let quizStarted = false;
+        let studentInfo = {};
+
+        // DOM elements
+        const studentInfoForm = document.getElementById('student-info-form');
+        const attemptWarning = document.getElementById('attempt-warning');
+        const previousResult = document.getElementById('previous-result');
+        const previousResultDetails = document.getElementById('previous-result-details');
+        const viewPreviousBtn = document.getElementById('view-previous-btn');
+        const timerContainer = document.getElementById('timer-container');
+        const timerDisplay = document.getElementById('timer');
+        const quizInterface = document.getElementById('quiz-interface');
+        const questionText = document.getElementById('question-text-1');
+        const optionsContainer = document.getElementById('options-1');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressFill = document.getElementById('progress-fill');
+        const answeredCount = document.getElementById('answered-count');
+        const flaggedCount = document.getElementById('flagged-count');
+        const questionGrid = document.getElementById('question-grid');
+        const reviewBtn = document.getElementById('review-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const scoreValue = document.getElementById('score-value');
+        const scorePercentage = document.getElementById('score-percentage');
+        const scoreMessage = document.getElementById('score-message');
+        const emailStatus = document.getElementById('email-status');
+        const resultsDetails = document.getElementById('results-details');
+        const retakeBtn = document.getElementById('retake-btn');
+        const viewAllResultsBtn = document.getElementById('view-all-results-btn');
+        const allResultsContainer = document.getElementById('all-results-container');
+        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+        const downloadCsvBtn = document.getElementById('download-csv-btn');
+        const leaderboardBody = document.getElementById('leaderboard-body');
+        const resultsTableBody = document.getElementById('results-table-body');
+        const noResults = document.getElementById('no-results');
+        const backToResultsBtn = document.getElementById('back-to-results-btn');
+        const retakeFromAllBtn = document.getElementById('retake-from-all-btn');
+
+        // Check if email has already been used
+        function checkEmailExists(email) {
+            const allResults = JSON.parse(localStorage.getItem('utmeQuizResults')) || [];
+            return allResults.find(result => result.studentInfo.email.toLowerCase() === email.toLowerCase());
+        }
+
+        // Initialize the quiz
+        function initQuiz() {
+            // Create question navigation grid
+            createQuestionGrid();
+            
+            // Load the first question
+            loadQuestion(currentQuestion);
+            
+            // Update progress
+            updateProgress();
+            
+            // Start the timer
+            startTimer();
+        }
+
+        // Create question navigation grid
+        function createQuestionGrid() {
+            questionGrid.innerHTML = '';
+            
+            quizQuestions.forEach((question, index) => {
+                const gridItem = document.createElement('div');
+                gridItem.className = 'question-grid-item';
+                gridItem.textContent = index + 1;
+                gridItem.dataset.question = index + 1;
+                
+                if (index === 0) {
+                    gridItem.classList.add('current');
+                }
+                
+                gridItem.addEventListener('click', () => {
+                    navigateToQuestion(index + 1);
+                });
+                
+                questionGrid.appendChild(gridItem);
+            });
+        }
+
+        // Load a specific question
+        function loadQuestion(questionNumber) {
+            const question = quizQuestions[questionNumber - 1];
+            
+            // Update question text
+            questionText.textContent = question.question;
+            
+            // Add passage if it exists
+            if (question.passage) {
+                const passageElement = document.createElement('div');
+                passageElement.className = 'passage';
+                passageElement.innerHTML = `<p><strong>Passage:</strong> ${question.passage}</p>`;
+                questionText.prepend(passageElement);
+            }
+            
+            // Update options
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                if (userAnswers[questionNumber - 1] === index) {
+                    optionElement.classList.add('selected');
+                }
+                
+                const optionLabel = document.createElement('div');
+                optionLabel.className = 'option-label';
+                optionLabel.textContent = String.fromCharCode(65 + index); // A, B, C, D
+                
+                const optionText = document.createElement('div');
+                optionText.className = 'option-text';
+                optionText.textContent = option;
+                
+                optionElement.appendChild(optionLabel);
+                optionElement.appendChild(optionText);
+                
+                optionElement.addEventListener('click', () => {
+                    selectOption(questionNumber, index);
+                });
+                
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Update flag button
+            const flagBtn = document.querySelector('.flag-btn');
+            flagBtn.dataset.question = questionNumber;
+            if (flaggedQuestions[questionNumber - 1]) {
+                flagBtn.classList.add('flagged');
+            } else {
+                flagBtn.classList.remove('flagged');
+            }
+            
+            // Update navigation buttons
+            prevBtn.disabled = questionNumber === 1;
+            nextBtn.textContent = questionNumber === quizQuestions.length ? 'Finish' : 'Next';
+            
+            // Update question grid
+            updateQuestionGrid(questionNumber);
+        }
+
+        // Select an option for a question
+        function selectOption(questionNumber, optionIndex) {
+            userAnswers[questionNumber - 1] = optionIndex;
+            
+            // Update UI
+            const options = document.querySelectorAll('.option');
+            options.forEach((option, index) => {
+                if (index === optionIndex) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+            
+            // Update progress
+            updateProgress();
+        }
+
+        // Navigate to a specific question
+        function navigateToQuestion(questionNumber) {
+            currentQuestion = questionNumber;
+            loadQuestion(currentQuestion);
+        }
+
+        // Update progress indicators
+        function updateProgress() {
+            const answered = userAnswers.filter(answer => answer !== null).length;
+            const flagged = flaggedQuestions.filter(flag => flag).length;
+            
+            answeredCount.textContent = answered;
+            flaggedCount.textContent = flagged;
+            
+            const progressPercentage = (answered / quizQuestions.length) * 100;
+            progressFill.style.width = `${progressPercentage}%`;
+            
+            // Update question grid
+            updateQuestionGrid(currentQuestion);
+        }
+
+        // Update question grid indicators
+        function updateQuestionGrid(currentQuestionNum) {
+            const gridItems = document.querySelectorAll('.question-grid-item');
+            
+            gridItems.forEach((item, index) => {
+                // Remove current class from all items
+                item.classList.remove('current');
+                
+                // Add appropriate classes based on state
+                if (index + 1 === currentQuestionNum) {
+                    item.classList.add('current');
+                }
+                
+                if (userAnswers[index] !== null) {
+                    item.classList.add('answered');
+                } else {
+                    item.classList.remove('answered');
+                }
+                
+                if (flaggedQuestions[index]) {
+                    item.classList.add('flagged');
+                } else {
+                    item.classList.remove('flagged');
+                }
+            });
+        }
+
+        // Start the quiz timer
+        function startTimer() {
+            quizStarted = true;
+            timer = setInterval(() => {
+                timeLeft--;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    submitQuiz();
+                    return;
+                }
+                
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        // Update timer display
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Add warning styles when time is running low
+            if (timeLeft <= 300) { // 5 minutes
+                timerDisplay.classList.add('warning');
+            }
+            
+            if (timeLeft <= 60) { // 1 minute
+                timerDisplay.classList.add('danger');
+            }
+        }
+
+        // Submit the quiz
+        function submitQuiz() {
+            clearInterval(timer);
+            
+            // Calculate score
+            let score = 0;
+            quizQuestions.forEach((question, index) => {
+                if (userAnswers[index] === question.correctAnswer) {
+                    score++;
+                }
+            });
+            
+            const percentage = Math.round((score / quizQuestions.length) * 100);
+            
+            // Save results
+            saveResults(score, percentage);
+            
+            // Display results
+            displayResults(score, percentage);
+        }
+
+        // Save quiz results to localStorage
+        function saveResults(score, percentage) {
+            const results = {
+                studentInfo: studentInfo,
+                answers: userAnswers,
+                score: score,
+                percentage: percentage,
+                timeTaken: 15 * 60 - timeLeft,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Get existing results from localStorage
+            let allResults = JSON.parse(localStorage.getItem('utmeQuizResults')) || [];
+            
+            // Check if this email already has a result
+            const existingIndex = allResults.findIndex(
+                result => result.studentInfo.email.toLowerCase() === studentInfo.email.toLowerCase()
+            );
+            
+            // If exists, replace it; otherwise add new
+            if (existingIndex !== -1) {
+                allResults[existingIndex] = results;
+            } else {
+                allResults.push(results);
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem('utmeQuizResults', JSON.stringify(allResults));
+        }
+
+        // Format time in MM:SS format
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // Display quiz results
+        function displayResults(score, percentage) {
+            // Hide quiz interface, show results
+            quizInterface.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+            
+            // Update score display
+            scoreValue.textContent = score;
+            scorePercentage.textContent = `${percentage}%`;
+            
+            // Set score message
+            if (percentage >= 80) {
+                scoreMessage.textContent = "Excellent! You have a strong command of English.";
+            } else if (percentage >= 60) {
+                scoreMessage.textContent = "Good job! You have a good understanding of English.";
+            } else if (percentage >= 40) {
+                scoreMessage.textContent = "Fair performance. Consider reviewing the areas you struggled with.";
+            } else {
+                scoreMessage.textContent = "You may need more practice. Review the concepts and try again.";
+            }
+            
+            // Display detailed results
+            resultsDetails.innerHTML = '';
+            quizQuestions.forEach((question, index) => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                
+                const isCorrect = userAnswers[index] === question.correctAnswer;
+                
+                if (isCorrect) {
+                    resultItem.classList.add('correct');
+                } else {
+                    resultItem.classList.add('incorrect');
+                }
+                
+                let resultHTML = `
+                    <p><strong>Question ${index + 1}:</strong> ${question.question}</p>
+                    <p>Your answer: ${userAnswers[index] !== null ? question.options[userAnswers[index]] : 'Not answered'}</p>
+                `;
+                
+                if (!isCorrect) {
+                    resultHTML += `<p class="correct-answer">Correct answer: ${question.options[question.correctAnswer]}</p>`;
+                }
+                
+                resultItem.innerHTML = resultHTML;
+                resultsDetails.appendChild(resultItem);
+            });
+        }
+
+        // Display all results compilation
+        function displayAllResults() {
+            resultsContainer.classList.add('hidden');
+            allResultsContainer.classList.remove('hidden');
+            
+            // Get results from localStorage
+            const allResults = JSON.parse(localStorage.getItem('utmeQuizResults')) || [];
+            
+            if (allResults.length === 0) {
+                noResults.classList.remove('hidden');
+                document.getElementById('results-table').classList.add('hidden');
+                leaderboardBody.innerHTML = '<div class="leaderboard-item"><div class="leaderboard-name" style="text-align: center;">No results available</div></div>';
+            } else {
+                noResults.classList.add('hidden');
+                document.getElementById('results-table').classList.remove('hidden');
+                
+                // Sort results by score (descending)
+                const sortedResults = [...allResults].sort((a, b) => b.score - a.score);
+                
+                // Populate leaderboard
+                leaderboardBody.innerHTML = '';
+                sortedResults.forEach((result, index) => {
+                    const leaderboardItem = document.createElement('div');
+                    leaderboardItem.className = 'leaderboard-item';
+                    
+                    // Highlight current user
+                    if (result.studentInfo.email === studentInfo.email) {
+                        leaderboardItem.style.backgroundColor = '#e1f5fe';
+                        leaderboardItem.style.fontWeight = 'bold';
+                    }
+                    
+                    leaderboardItem.innerHTML = `
+                        <div class="leaderboard-rank">${index + 1}</div>
+                        <div class="leaderboard-name">${result.studentInfo.name}</div>
+                        <div class="leaderboard-score">${result.score}/30</div>
+                        <div class="leaderboard-percentage">${result.percentage}%</div>
+                    `;
+                    
+                    leaderboardBody.appendChild(leaderboardItem);
+                });
+                
+                // Populate results table
+                resultsTableBody.innerHTML = '';
+                sortedResults.forEach((result, index) => {
+                    const row = document.createElement('tr');
+                    
+                    // Highlight current user
+                    if (result.studentInfo.email === studentInfo.email) {
+                        row.style.backgroundColor = '#e1f5fe';
+                        row.style.fontWeight = 'bold';
+                    }
+                    
+                    const timeTakenMinutes = Math.floor(result.timeTaken / 60);
+                    const timeTakenSeconds = result.timeTaken % 60;
+                    const formattedTime = `${timeTakenMinutes}:${timeTakenSeconds.toString().padStart(2, '0')}`;
+                    
+                    const date = new Date(result.timestamp);
+                    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                    
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${result.studentInfo.name}</td>
+                        <td>${result.studentInfo.email}</td>
+                        <td>${result.score}/30</td>
+                        <td>${result.percentage}%</td>
+                        <td>${formattedTime}</td>
+                        <td>${formattedDate}</td>
+                    `;
+                    
+                    resultsTableBody.appendChild(row);
+                });
+            }
+        }
+
+        // Generate and download PDF of all results
+        function downloadResultsPDF() {
+            const allResults = JSON.parse(localStorage.getItem('utmeQuizResults')) || [];
+            
+            if (allResults.length === 0) {
+                alert('No results to download.');
+                return;
+            }
+            
+            // Sort results by score (descending)
+            const sortedResults = [...allResults].sort((a, b) => b.score - a.score);
+            
+            // Create PDF content
+            const pdfHTML = `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h1 style="text-align: center; color: #9b59b6; margin-bottom: 5px;">SIRKACADEMY</h1>
+                    <p style="text-align: center; color: #7f8c8d; margin-bottom: 20px;">UTME English Quiz Results</p>
+                    <p style="text-align: center; color: #7f8c8d;">Generated on ${new Date().toLocaleString()}</p>
+                    
+                    <div style="margin: 30px 0;">
+                        <h2 style="color: #2c3e50; border-bottom: 2px solid #9b59b6; padding-bottom: 10px;">Performance Summary</h2>
+                        <p><strong>Total Participants:</strong> ${allResults.length}</p>
+                        <p><strong>Average Score:</strong> ${Math.round(allResults.reduce((sum, result) => sum + result.score, 0) / allResults.length)}/30</p>
+                        <p><strong>Average Percentage:</strong> ${Math.round(allResults.reduce((sum, result) => sum + result.percentage, 0) / allResults.length)}%</p>
+                    </div>
+                    
+                    <h2 style="color: #2c3e50; border-bottom: 2px solid #9b59b6; padding-bottom: 10px;">Leaderboard</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                        <thead>
+                            <tr style="background-color: #2c3e50; color: white;">
+                                <th style="padding: 10px; border: 1px solid #ddd;">Rank</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Name</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Score</th>
+                                <th style="padding: 10px; border: 1px solid #ddd;">Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${sortedResults.map((result, index) => `
+                                <tr>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${index + 1}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${result.studentInfo.name}</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${result.score}/30</td>
+                                    <td style="padding: 10px; border: 1px solid #ddd;">${result.percentage}%</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 30px; page-break-before: always;">
+                        <h2 style="color: #2c3e50; border-bottom: 2px solid #9b59b6; padding-bottom: 10px;">Detailed Results</h2>
+                        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                            <thead>
+                                <tr style="background-color: #2c3e50; color: white;">
+                                    <th style="padding: 10px; border: 1px solid #ddd;">Rank</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd;">Name</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd;">Email</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd;">Score</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd;">Percentage</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd;">Time Taken</th>
+                                    <th style="padding: 10px; border: 1px solid #ddd;">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sortedResults.map((result, index) => {
+                                    const timeTakenMinutes = Math.floor(result.timeTaken / 60);
+                                    const timeTakenSeconds = result.timeTaken % 60;
+                                    const formattedTime = `${timeTakenMinutes}:${timeTakenSeconds.toString().padStart(2, '0')}`;
+                                    
+                                    const date = new Date(result.timestamp);
+                                    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                                    
+                                    return `
+                                        <tr>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${index + 1}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${result.studentInfo.name}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${result.studentInfo.email}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${result.score}/30</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${result.percentage}%</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${formattedTime}</td>
+                                            <td style="padding: 10px; border: 1px solid #ddd;">${formattedDate}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            // For actual PDF generation (commented out for demo):
+            /*
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            doc.html(pdfHTML, {
+                callback: function(doc) {
+                    doc.save('SIRKACADEMY_UTME_Quiz_Results.pdf');
+                },
+                x: 10,
+                y: 10,
+                width: 190,
+                windowWidth: 1000
+            });
+            */
+            
+            // For demo purposes, show a preview and download as HTML
+            const blob = new Blob([pdfHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'SIRKACADEMY_UTME_Quiz_Results.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('PDF download started. In a real implementation, this would be a proper PDF file.');
+        }
+
+        // Export results as CSV
+        function exportResultsCSV() {
+            const allResults = JSON.parse(localStorage.getItem('utmeQuizResults')) || [];
+            
+            if (allResults.length === 0) {
+                alert('No results to export.');
+                return;
+            }
+            
+            // Sort results by score (descending)
+            const sortedResults = [...allResults].sort((a, b) => b.score - a.score);
+            
+            // Create CSV header
+            let csv = 'Rank,Name,Email,Score,Percentage,Time Taken,Date\n';
+            
+            // Add data rows
+            sortedResults.forEach((result, index) => {
+                const timeTakenMinutes = Math.floor(result.timeTaken / 60);
+                const timeTakenSeconds = result.timeTaken % 60;
+                const formattedTime = `${timeTakenMinutes}:${timeTakenSeconds.toString().padStart(2, '0')}`;
+                
+                const date = new Date(result.timestamp);
+                const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                
+                csv += `${index + 1},"${result.studentInfo.name}","${result.studentInfo.email}",${result.score},${result.percentage}%,"${formattedTime}","${formattedDate}"\n`;
+            });
+            
+            // Create download link
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'SIRKACADEMY_UTME_Quiz_Results.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Clear all results
+        function clearResults() {
+            if (confirm('Are you sure you want to clear all quiz results? This action cannot be undone.')) {
+                localStorage.removeItem('utmeQuizResults');
+                displayAllResults();
+            }
+        }
+
+        // Show previous result if email exists
+        function showPreviousResult(email) {
+            const previous = checkEmailExists(email);
+            if (previous) {
+                attemptWarning.classList.remove('hidden');
+                previousResult.classList.remove('hidden');
+                
+                previousResultDetails.innerHTML = `
+                    <p><strong>Score:</strong> ${previous.score}/30 (${previous.percentage}%)</p>
+                    <p><strong>Date:</strong> ${new Date(previous.timestamp).toLocaleString()}</p>
+                `;
+                
+                return true;
+            }
+            return false;
+        }
+
+        // Event listeners
+        document.getElementById('start-quiz-btn').addEventListener('click', () => {
+            const name = document.getElementById('student-name').value.trim();
+            const email = document.getElementById('student-email').value.trim();
+            
+            if (!name || !email) {
+                alert('Please enter your name and email address.');
+                return;
+            }
+            
+            // Check if email already exists
+            if (checkEmailExists(email)) {
+                alert('This email has already been used to take the quiz. You can only take the quiz once.');
+                showPreviousResult(email);
+                return;
+            }
+            
+            studentInfo = { name, email };
+            
+            studentInfoForm.classList.add('hidden');
+            timerContainer.classList.remove('hidden');
+            quizInterface.classList.remove('hidden');
+            
+            initQuiz();
+        });
+
+        document.getElementById('student-email').addEventListener('blur', function() {
+            const email = this.value.trim();
+            if (email) {
+                showPreviousResult(email);
+            }
+        });
+
+        viewPreviousBtn.addEventListener('click', () => {
+            const email = document.getElementById('student-email').value.trim();
+            const previous = checkEmailExists(email);
+            if (previous) {
+                // Display the previous result
+                studentInfo = previous.studentInfo;
+                userAnswers = previous.answers;
+                displayResults(previous.score, previous.percentage);
+                studentInfoForm.classList.add('hidden');
+                resultsContainer.classList.remove('hidden');
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestion > 1) {
+                navigateToQuestion(currentQuestion - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestion < quizQuestions.length) {
+                navigateToQuestion(currentQuestion + 1);
+            } else {
+                submitQuiz();
+            }
+        });
+
+        document.querySelector('.flag-btn').addEventListener('click', (e) => {
+            const questionNum = parseInt(e.target.dataset.question);
+            flaggedQuestions[questionNum - 1] = !flaggedQuestions[questionNum - 1];
+            e.target.classList.toggle('flagged');
+            updateProgress();
+        });
+
+        reviewBtn.addEventListener('click', () => {
+            const firstFlagged = flaggedQuestions.findIndex(flag => flag) + 1;
+            if (firstFlagged > 0) {
+                navigateToQuestion(firstFlagged);
+            } else {
+                alert('No questions have been flagged for review.');
+            }
+        });
+
+        submitBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to submit your quiz? You cannot change your answers after submission.')) {
+                submitQuiz();
+            }
+        });
+
+        retakeBtn.addEventListener('click', () => {
+            // Reset quiz state
+            currentQuestion = 1;
+            userAnswers = new Array(quizQuestions.length).fill(null);
+            flaggedQuestions = new Array(quizQuestions.length).fill(false);
+            timeLeft = 15 * 60;
+            
+            // Show student info form again
+            resultsContainer.classList.add('hidden');
+            studentInfoForm.classList.remove('hidden');
+            
+            // Reset form
+            document.getElementById('student-name').value = '';
+            document.getElementById('student-email').value = '';
+            previousResult.classList.add('hidden');
+            attemptWarning.classList.add('hidden');
+        });
+
+        viewAllResultsBtn.addEventListener('click', displayAllResults);
+
+        downloadPdfBtn.addEventListener('click', downloadResultsPDF);
+
+        downloadCsvBtn.addEventListener('click', exportResultsCSV);
+
+        backToResultsBtn.addEventListener('click', () => {
+            allResultsContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+        });
+
+        retakeFromAllBtn.addEventListener('click', () => {
+            // Reset quiz state
+            currentQuestion = 1;
+            userAnswers = new Array(quizQuestions.length).fill(null);
+            flaggedQuestions = new Array(quizQuestions.length).fill(false);
+            timeLeft = 15 * 60;
+            
+            // Show student info form again
+            allResultsContainer.classList.add('hidden');
+            studentInfoForm.classList.remove('hidden');
+            
+            // Reset form
+            document.getElementById('student-name').value = '';
+            document.getElementById('student-email').value = '';
+            previousResult.classList.add('hidden');
+            attemptWarning.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
